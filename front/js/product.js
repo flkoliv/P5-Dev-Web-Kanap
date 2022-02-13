@@ -72,7 +72,7 @@ document
 
 
         localStorage.setItem("obj", JSON.stringify(tab));
-
+        alert("produit ajouté au panier")
 
         // localStorage.clear();
 
