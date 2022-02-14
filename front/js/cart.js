@@ -1,99 +1,126 @@
 
-function affiche() {
-    fetch(`http://127.0.0.1:3000/api/products/`)
-        .then(function (res) {
-            if (res.ok) {
-                return res.json();
-            }
-        })
-        .then(function (value) {
 
-            try {
-                tab = JSON.parse(localStorage.getItem("obj"));
-                let htmlToInsert = "";
-                let totalPrice = 0;
-                let nbArticles = 0;
-                for (let canape of tab) {
-                    for (let canap of value) {
-                        if (canap._id == canape.id) {
-                            console.log(canap);
-                            totalPrice = totalPrice + canap.price * canape.number;
-                            nbArticles = nbArticles + canape.number;
-                            htmlToInsert = htmlToInsert +
-                                `<article class="cart__item" data-id="${canap._id}" data-color="${canape.color}">
-                            <div class="cart__item__img">
-                            <img src="${canap.imageUrl}" alt="${canap.altTxt}">
-                            </div>
-                            <div class="cart__item__content">
-                            <div class="cart__item__content__description">
-                            <h2>${canap.name}</h2>
-                            <p>${canape.color}</p>
-                            <p>${canap.price}€</p>
-                            </div>
-                            <div class="cart__item__content__settings">
-                            <div class="cart__item__content__settings__quantity">
-                            <p>Qté : </p>
-                            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${canape.number}">
-                            </div>
-                            <div class="cart__item__content__settings__delete">
-                            <p class="deleteItem">Supprimer</p>
-                            </div>
-                            </div>
-                            </div>
-                            </article>`
+fetch(`http://127.0.0.1:3000/api/products/`)
+    .then(function (res) {
+        if (res.ok) {
+            return res.json();
+        }
+    })
+    .then(function (value) {
 
-                        }
+        try {
+            tab = JSON.parse(localStorage.getItem("cart"));
+            for (let canape of tab) {
+                for (let canap of value) {
+                    if (canap._id == canape.id) {
+                        article = document.getElementById("cart__items").appendChild(document.createElement("article"));
+                        article.setAttribute("class", "cart__item");
+                        article.setAttribute("data-id", canap._id);
+                        article.setAttribute("data-color", canape.color);
+                        divImage = article.appendChild(document.createElement("div"));
+                        divImage.setAttribute("class", "cart__item__img");
+                        image = divImage.appendChild(document.createElement("img"));
+                        image.setAttribute("src", canap.imageUrl);
+                        image.setAttribute("alt", canap.altTxt);
+                        divCartItem = article.appendChild(document.createElement("div"));
+                        divCartItem.setAttribute("class", "cart__item__content")
+                        divCartDescription = divCartItem.appendChild(document.createElement("div"));
+                        divCartDescription.setAttribute("class", "cart__item__content__description");
+                        h2 = divCartDescription.appendChild(document.createElement("h2"));
+                        h2.innerText = canap.name;
+                        p = divCartDescription.appendChild(document.createElement("p"));
+                        p.innerText = canape.color;
+                        p = divCartDescription.appendChild(document.createElement("p"));
+                        p.innerText = canap.price + "€";
+                        divCartSettings = divCartItem.appendChild(document.createElement("div"));
+                        divCartSettings.setAttribute("class", "cart__item__content__settings")
+                        divCartSettingsQuantity = divCartSettings.appendChild(document.createElement("div"));
+                        divCartSettingsQuantity.setAttribute("class", "cart__item__content__settings__quantity")
+                        p = divCartSettingsQuantity.appendChild(document.createElement("p"));
+                        p.innerText = "Qté : ";
+                        input = divCartSettingsQuantity.appendChild(document.createElement("input"));
+                        input.setAttribute("type", "number");
+                        input.setAttribute("class", "itemQuantity");
+                        input.setAttribute("name", "itemQuantity");
+                        input.setAttribute("min", 1);
+                        input.setAttribute("max", 100);
+                        input.setAttribute("value", canape.number);
+                        divCartSettingsDelete = divCartSettings.appendChild(document.createElement("div"));
+                        divCartSettingsDelete.setAttribute("class", "cart__item__content__settings__delete")
+                        p = divCartSettingsDelete.appendChild(document.createElement("p"));
+                        p.setAttribute("class", "deleteItem")
+                        p.innerText = "Supprimer"
                     }
-
                 }
 
-                document
-                    .getElementById("cart__items")
-                    .innerHTML = htmlToInsert;
-                document
-                    .getElementById("totalPrice")
-                    .innerHTML = totalPrice;
-                document
-                    .getElementById("totalQuantity")
-                    .innerHTML = nbArticles;
-
-                const collection = document.getElementsByClassName("cart__item");
-                // console.log(collection[0].attributes[1].value);
-                for (i = 0; i < collection.length; i++) {
-                    const x = i;
-                    elt1 = collection[x].getElementsByClassName("deleteItem");
-                    elt2 = collection[x].getElementsByClassName("itemQuantity");
-                    console.log(tab)
-
-
-                    elt1[0].addEventListener('click', function () {
-                        tab.splice(x, 1);
-                        localStorage.setItem("obj", JSON.stringify(tab));
-                        affiche();
-                    })
-
-                    elt2[0].addEventListener('change', function (event) {
-                        tab[x].number = parseInt(event.target.value);
-                        localStorage.setItem("obj", JSON.stringify(tab));
-                        console.log(tab);
-                        affiche();
-                    })
-
-                }
             }
-            catch {
-                //erreur
-            }
-        })
-        .catch(function (err) {
-            // Une erreur est survenue
-        });
+            calculTotaux();
+            setEvent();
+
+        }
+        catch {
+            //erreur
+        }
+    })
+    .catch(function (err) {
+        // Une erreur est survenue
+    });
+
+
+
+
+
+function calculNombreTotal() {
+    const collection = document.getElementsByClassName("cart__item");
+    let total = 0;
+    for (item of collection) {
+        total += parseInt(item.getElementsByClassName("itemQuantity")[0].value)
+    }
+    document
+        .getElementById("totalQuantity")
+        .innerText = total;
+    return total;
 }
 
+function calculPrixTotal() {
+    const collection = document.getElementsByClassName("cart__item");
+    let total = 0;
+    for (item of collection) {
+        prix = item.querySelector(".cart__item__content__description").children[2].innerText.slice(0, -1);
+        total += parseInt(item.getElementsByClassName("itemQuantity")[0].value) * parseInt(prix)
+    }
+    document
+        .getElementById("totalPrice")
+        .innerText = total;
+    return total;
+}
 
-affiche();
+function calculTotaux() {
+    calculNombreTotal();
+    calculPrixTotal();
+}
 
+function setEvent() {
+    const collection = document.getElementsByClassName("cart__item");
+    for (i = 0; i < collection.length; i++) {
+        const x = i;
+        elt1 = collection[x].getElementsByClassName("deleteItem");
+        elt2 = collection[x].getElementsByClassName("itemQuantity");
 
+        
+        elt1[0].addEventListener('click', function () {
+            tab.splice(x, 1);
+            localStorage.setItem("cart", JSON.stringify(tab));
+            collection[x].remove();
+            console.log(x);
+            location.reload();
+            calculTotaux();
+        })
 
-
-
+        elt2[0].addEventListener('change', function (event) {
+            tab[x].number = parseInt(event.target.value);
+            localStorage.setItem("cart", JSON.stringify(tab));
+            calculTotaux();
+        })
+    }
+}

@@ -1,9 +1,6 @@
 let url = new URL(window.location.href);
 let id = url.searchParams.get("id");
 
-let objLinea = localStorage.getItem("obj");
-console.log(objLinea)
-
 fetch(`http://127.0.0.1:3000/api/products/${id}`)
     .then(function (res) {
         if (res.ok) {
@@ -11,9 +8,12 @@ fetch(`http://127.0.0.1:3000/api/products/${id}`)
         }
     })
     .then(function (value) {
-        document
+        document.querySelector('title').innerText = value.name;
+        img = document
             .getElementsByClassName("item__img")[0]
-            .innerHTML = `<img src="${value.imageUrl}" alt="${value.altTxt}">`;
+            .appendChild(document.createElement("img"));
+        img.setAttribute('src', value.imageUrl)
+        img.setAttribute('alt', value.altTxt)
         document
             .getElementById("title")
             .innerText = value.name;
@@ -23,13 +23,13 @@ fetch(`http://127.0.0.1:3000/api/products/${id}`)
         document
             .getElementById("description")
             .innerText = value.description;
-        let colorsInsert = `<option value="">--SVP, choisissez une couleur --</option>`;
-        for (let color of value.colors) {
-            colorsInsert = colorsInsert + `<option value="${color}">${color}</option>`
-        }
-        document
-            .getElementById("colors")
-            .innerHTML = colorsInsert;
+        for (let color of value.colors){
+            option = document
+                .getElementById("colors")
+                .appendChild(document.createElement("option"));
+            option.setAttribute("value", color);
+            option.innerText=color;
+        };
     })
     .catch(function (err) {
         // Une erreur est survenue
@@ -38,19 +38,19 @@ fetch(`http://127.0.0.1:3000/api/products/${id}`)
 document
     .getElementById("addToCart")
     .addEventListener('click', function () {
-        let number = parseInt(document.getElementById("quantity").value);
-        let color = document.getElementById("colors").value;
-        let tab = [];
+        // let number = parseInt(document.getElementById("quantity").value);
+        // let color = document.getElementById("colors").value;
+        // let tab = [];
         let canape = {
             id: id,
-            color: color,
-            number: number
+            color: document.getElementById("colors").value,
+            number: parseInt(document.getElementById("quantity").value)
         }
-        if (number == 0 || color==""){
+        if (canape.number==0  || canape.color==""){
             return;
         }
         try {
-            tab = JSON.parse(localStorage.getItem("obj"));
+            tab = JSON.parse(localStorage.getItem("cart"));
             let insert = true;
             for (let i of tab) {
 
@@ -68,13 +68,8 @@ document
             tab = [];
             tab.push(canape);
         }
-        console.log(tab)
-
-
-        localStorage.setItem("obj", JSON.stringify(tab));
-        alert("produit ajouté au panier")
-
-        // localStorage.clear();
+        localStorage.setItem("cart", JSON.stringify(tab));
+        alert("Produit ajouté au panier");
 
     }
     )
