@@ -1,6 +1,6 @@
 
 
-fetch(`http://127.0.0.1:3000/api/products/`)
+fetch(`http://127.0.0.1:3000/api/products/`) // connexion à l'API
     .then(function (res) {
         if (res.ok) {
             return res.json();
@@ -8,11 +8,14 @@ fetch(`http://127.0.0.1:3000/api/products/`)
     })
     .then(function (value) {
 
-        try {
+        if (localStorage.getItem("cart") == null) { // s'il n'y a pas de panier
+            console.log("pas de panier")
+        } else {
             tab = JSON.parse(localStorage.getItem("cart"));
             for (let canape of tab) {
                 for (let canap of value) {
-                    if (canap._id == canape.id) {
+                    if (canap._id == canape.id) { // quand le canapé est trouvé dans l'API
+                        // affichage de l'HTML du canapé
                         article = document.getElementById("cart__items").appendChild(document.createElement("article"));
                         article.setAttribute("class", "cart__item");
                         article.setAttribute("data-id", canap._id);
@@ -52,22 +55,18 @@ fetch(`http://127.0.0.1:3000/api/products/`)
                         p.innerText = "Supprimer"
                     }
                 }
-
             }
-            calculTotaux();
-            setEvent();
+        }
+        calculTotaux();
+        setEvent();
 
-        }
-        catch {
-            //erreur
-        }
     })
+
+
     .catch(function (err) {
         // Une erreur est survenue
+        console.log("Erreur : " + err);
     });
-
-
-
 
 
 function calculNombreTotal() {
@@ -107,14 +106,12 @@ function setEvent() {
         elt1 = collection[x].getElementsByClassName("deleteItem");
         elt2 = collection[x].getElementsByClassName("itemQuantity");
 
-        
         elt1[0].addEventListener('click', function () {
             tab.splice(x, 1);
             localStorage.setItem("cart", JSON.stringify(tab));
             collection[x].remove();
             console.log(x);
             location.reload();
-            calculTotaux();
         })
 
         elt2[0].addEventListener('change', function (event) {
@@ -123,4 +120,85 @@ function setEvent() {
             calculTotaux();
         })
     }
+}
+
+validation = document.getElementById("order")
+validation.addEventListener('click', async function (event) {
+    event.preventDefault();
+    contact = getform();
+    panier = JSON.parse(localStorage.getItem("cart"));
+    if (panier != null && panier.length != 0 && contact != null) {
+        
+        let products = [];
+        for (product of panier) {
+            products.push(product.id)
+
+        }
+        requete = { contact, products }
+
+
+
+        let result = await fetch(`http://localhost:3000/api/products/order`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requete)
+        })
+        let data = await result.json();
+        console.log(data.orderId)
+        document.location.href = 'confirmation.html?id=' + data.orderId;
+    }
+})
+
+
+
+
+function getform() {
+    form = {
+        'firstName': document.getElementById('firstName').value,
+        'lastName': document.getElementById('lastName').value,
+        'address': document.getElementById('address').value,
+        'city': document.getElementById('city').value,
+        'email': document.getElementById('email').value
+    }
+    if (formValid(form)) {
+        return form;
+    } else {
+        return null;
+    }
+
+
+}
+
+function formValid(form) {
+    let valid = true;
+    let emailRegExp = new RegExp('^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$');
+    let charRegExp = new RegExp("^[a-zA-Z ,.'-]+$");
+    let addressRegExp = new RegExp("^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+");
+
+    document.getElementById('firstNameErrorMsg').innerText = "";
+    document.getElementById('lastNameErrorMsg').innerText = "";
+    document.getElementById('addressErrorMsg').innerText = "";
+    document.getElementById('cityErrorMsg').innerText = "";
+    document.getElementById('emailErrorMsg').innerText = "";
+    if (!charRegExp.test(form.firstName)) {
+        document.getElementById('firstNameErrorMsg').innerText = "Renseignez votre prénom.";
+        valid = false;
+    }
+    if (!charRegExp.test(form.lastName)) {
+        document.getElementById('lastNameErrorMsg').innerText = "Renseignez votre Nom.";
+        valid = false;
+    }
+    if (!addressRegExp.test(form.address)) {
+        document.getElementById('addressErrorMsg').innerText = "Renseignez votre adresse.";
+        valid = false;
+    }
+    if (!charRegExp.test(form.city)) {
+        document.getElementById('cityErrorMsg').innerText = "Renseignez votre ville.";
+        valid = false;
+    }
+    if (!emailRegExp.test(form.email)) {
+        document.getElementById('emailErrorMsg').innerText = "Renseignez une adresse mail valide.";
+        valid = false;
+    }
+    return valid;
 }
