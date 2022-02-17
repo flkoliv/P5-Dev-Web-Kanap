@@ -10,7 +10,7 @@ fetch(`http://127.0.0.1:3000/api/products/`) // connexion à l'API
 
         if (localStorage.getItem("cart") == null) { // s'il n'y a pas de panier
             console.log("pas de panier")
-        } else {
+        } else { // s'il y a un panier
             tab = JSON.parse(localStorage.getItem("cart"));
             for (let canape of tab) {
                 for (let canap of value) {
@@ -61,8 +61,6 @@ fetch(`http://127.0.0.1:3000/api/products/`) // connexion à l'API
         setEvent();
 
     })
-
-
     .catch(function (err) {
         // Une erreur est survenue
         console.log("Erreur : " + err);

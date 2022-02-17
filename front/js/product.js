@@ -41,7 +41,7 @@ document
         if (canape.number == 0 || canape.color == "") {
             return;
         }
-        if (localStorage.getItem("cart")!= null){ //si le panier existe déjà dans le localstorage
+        if (localStorage.getItem("cart") != null) { //si le panier existe déjà dans le localstorage
             tab = JSON.parse(localStorage.getItem("cart"));
             let insert = true;
             for (let i of tab) {
