@@ -68,7 +68,7 @@ fetch(`http://127.0.0.1:3000/api/products/`) // connexion à l'API
         console.log("Erreur : " + err);
     });
 
-
+// Mise à jour de la quantité totale dans le panier
 function calculNombreTotal() {
     const collection = document.getElementsByClassName("cart__item");
     let total = 0;
@@ -81,6 +81,7 @@ function calculNombreTotal() {
     return total;
 }
 
+// Mise à jour du prix total du panier
 function calculPrixTotal() {
     const collection = document.getElementsByClassName("cart__item");
     let total = 0;
@@ -94,11 +95,13 @@ function calculPrixTotal() {
     return total;
 }
 
+// calcul des totaux
 function calculTotaux() {
     calculNombreTotal();
     calculPrixTotal();
 }
 
+// mise en place des evenement supprimer et changement de quantité pour chaque item
 function setEvent() {
     const collection = document.getElementsByClassName("cart__item");
     for (i = 0; i < collection.length; i++) {
@@ -106,15 +109,14 @@ function setEvent() {
         elt1 = collection[x].getElementsByClassName("deleteItem");
         elt2 = collection[x].getElementsByClassName("itemQuantity");
 
-        elt1[0].addEventListener('click', function () {
+        elt1[0].addEventListener('click', function () { // clic sur supprimer
             tab.splice(x, 1);
             localStorage.setItem("cart", JSON.stringify(tab));
             collection[x].remove();
-            console.log(x);
             location.reload();
         })
 
-        elt2[0].addEventListener('change', function (event) {
+        elt2[0].addEventListener('change', function (event) { // changement du nombre d'item
             tab[x].number = parseInt(event.target.value);
             localStorage.setItem("cart", JSON.stringify(tab));
             calculTotaux();
@@ -122,36 +124,37 @@ function setEvent() {
     }
 }
 
-validation = document.getElementById("order")
-validation.addEventListener('click', async function (event) {
-    event.preventDefault();
-    contact = getform();
-    panier = JSON.parse(localStorage.getItem("cart"));
-    if (panier != null && panier.length != 0 && contact != null) {
-        
-        let products = [];
-        for (product of panier) {
-            products.push(product.id)
 
+// clic sur le bouton commander
+document
+    .getElementById("order")
+    .addEventListener('click', async function (event) {
+        event.preventDefault();
+        panier = JSON.parse(localStorage.getItem("cart"));
+        if (panier != null && panier.length != 0) { // s'il n'y a pas d'article dans le panier
+            contact = getform();
+            if (contact != null) { // si le formulaire est bien rempli
+                let products = [];
+                for (product of panier) {
+                    products.push(product.id)
+                }
+                requete = { contact, products } // requete de l'API
+                let result = await fetch(`http://localhost:3000/api/products/order`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requete)
+                })
+                let data = await result.json();
+                document.location.href = 'confirmation.html?id=' + data.orderId; // on passe à la page de confirmation
+            }
+        } else {
+            alert('Votre panier est vide');
         }
-        requete = { contact, products }
+    })
 
 
 
-        let result = await fetch(`http://localhost:3000/api/products/order`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requete)
-        })
-        let data = await result.json();
-        console.log(data.orderId)
-        document.location.href = 'confirmation.html?id=' + data.orderId;
-    }
-})
-
-
-
-
+// recupération du contenu du formulaire sous forme d'objet
 function getform() {
     form = {
         'firstName': document.getElementById('firstName').value,
@@ -160,7 +163,7 @@ function getform() {
         'city': document.getElementById('city').value,
         'email': document.getElementById('email').value
     }
-    if (formValid(form)) {
+    if (formValid(form)) { // validation du formulaire
         return form;
     } else {
         return null;
@@ -169,13 +172,15 @@ function getform() {
 
 }
 
+
+// validation du contenu du formulaire 
 function formValid(form) {
     let valid = true;
     let emailRegExp = new RegExp('^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$');
     let charRegExp = new RegExp("^[a-zA-Z ,.'-]+$");
     let addressRegExp = new RegExp("^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+");
 
-    document.getElementById('firstNameErrorMsg').innerText = "";
+    document.getElementById('firstNameErrorMsg').innerText = ""; // mise à zero des message d'erreur
     document.getElementById('lastNameErrorMsg').innerText = "";
     document.getElementById('addressErrorMsg').innerText = "";
     document.getElementById('cityErrorMsg').innerText = "";

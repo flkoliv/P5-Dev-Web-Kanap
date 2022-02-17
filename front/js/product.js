@@ -36,15 +36,16 @@ document
             color: document.getElementById("colors").value,
             number: parseInt(document.getElementById("quantity").value)
         }
+        let tab = [];
         // si on clique sur "ajouter au panier" sans renseigner la couleur et le nombre
         if (canape.number == 0 || canape.color == "") {
             return;
         }
-        try { //si le panier existe déjà dans le localstorage
+        if (localStorage.getItem("cart")!= null){ //si le panier existe déjà dans le localstorage
             tab = JSON.parse(localStorage.getItem("cart"));
             let insert = true;
             for (let i of tab) {
-                // si un canapé de la même couleur est déjà dans le panier
+                // si un canapé de la même sorte et de la même couleur est déjà dans le panier
                 if (i.id == canape.id && i.color == canape.color) {
                     i.number = i.number + canape.number;
                     insert = false;
@@ -54,10 +55,12 @@ document
                 tab.push(canape);
             }
         }
-        catch { // si le panier n'existe pas dans le local storage
-            tab = [];
+        else { // si le panier n'existe pas dans le local storage
             tab.push(canape);
         }
         localStorage.setItem("cart", JSON.stringify(tab));
+        document.getElementById("colors").value = "";
+        document.getElementById("quantity").value = 0
         alert("Produit ajouté au panier");
     })
+
