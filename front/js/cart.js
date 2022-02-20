@@ -15,7 +15,7 @@ fetch(`http://127.0.0.1:3000/api/products/`) // connexion à l'API
             for (let canape of tab) {
                 for (let canap of value) {
                     if (canap._id == canape.id) { // quand le canapé est trouvé dans l'API
-                        // affichage de l'HTML du canapé
+                        // affichage du HTML du canapé
                         article = document.getElementById("cart__items").appendChild(document.createElement("article"));
                         article.setAttribute("class", "cart__item");
                         article.setAttribute("data-id", canap._id);
@@ -178,28 +178,28 @@ function formValid(form) {
     let charRegExp = new RegExp("^[a-zA-Z ,.'-]+$");
     let addressRegExp = new RegExp("^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+");
 
-    document.getElementById('firstNameErrorMsg').innerText = ""; // mise à zero des message d'erreur
+    document.getElementById('firstNameErrorMsg').innerText = ""; // mise à zero des messages d'erreur
     document.getElementById('lastNameErrorMsg').innerText = "";
     document.getElementById('addressErrorMsg').innerText = "";
     document.getElementById('cityErrorMsg').innerText = "";
     document.getElementById('emailErrorMsg').innerText = "";
-    if (!charRegExp.test(form.firstName)) {
+    if (!charRegExp.test(form.firstName.trim())) {
         document.getElementById('firstNameErrorMsg').innerText = "Renseignez votre prénom.";
         valid = false;
     }
-    if (!charRegExp.test(form.lastName)) {
+    if (!charRegExp.test(form.lastName.trim())) {
         document.getElementById('lastNameErrorMsg').innerText = "Renseignez votre Nom.";
         valid = false;
     }
-    if (!addressRegExp.test(form.address)) {
+    if (!addressRegExp.test(form.address.trim())) {
         document.getElementById('addressErrorMsg').innerText = "Renseignez votre adresse.";
         valid = false;
     }
-    if (!charRegExp.test(form.city)) {
+    if (!charRegExp.test(form.city.trim())) {
         document.getElementById('cityErrorMsg').innerText = "Renseignez votre ville.";
         valid = false;
     }
-    if (!emailRegExp.test(form.email)) {
+    if (!emailRegExp.test(form.email.trim())) {
         document.getElementById('emailErrorMsg').innerText = "Renseignez une adresse mail valide.";
         valid = false;
     }

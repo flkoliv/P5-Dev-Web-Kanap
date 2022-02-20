@@ -38,7 +38,7 @@ document
         }
         let tab = [];
         // si on clique sur "ajouter au panier" sans renseigner la couleur et le nombre
-        if (canape.number == 0 || canape.color == "") {
+        if (canape.number <= 0 || canape.color == "") {
             return;
         }
         if (localStorage.getItem("cart") != null) { //si le panier existe déjà dans le localstorage
